@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <title>Function Transformer 3D — Interactive Surface Studio</title>
+  <meta name="description" content="Real-time 3D visualization and transformation of mathematical surfaces with custom shaders, orbit controls, and animated morphing." />
+
+  <link rel="stylesheet" href="styles/theme.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/panel.css" />
+  <link rel="stylesheet" href="styles/controls.css" />
+  <link rel="stylesheet" href="styles/hud.css" />
+</head>
+<body>
+
+  <!-- ====== 3D STAGE ====== -->
+  <div id="stage" class="stage" aria-label="3D viewport">
+    <canvas id="gl" aria-hidden="true"></canvas>
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite">
+      <div class="loading-orbit" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="loading-text">Compiling shaders…</div>
+    </div>
+
+    <!-- Floating axis indicator (gizmo) -->
+    <div id="axisGizmo" class="axis-gizmo" aria-hidden="true">
+      <canvas id="gizmoCanvas"></canvas>
+    </div>
+
+    <!-- Live equation HUD -->
+    <div id="equationHud" class="equation-hud" aria-live="polite">
+      <div class="eq-line eq-base">
+        <span class="eq-key">f(x, y)</span>
+        <span class="eq-eq">=</span>
+        <span id="eqBaseText" class="eq-val">sin(√(x² + y²))</span>
+      </div>
+      <div class="eq-divider" aria-hidden="true"></div>
+      <div class="eq-line eq-template">
+        <span class="eq-key">z</span>
+        <span class="eq-eq">=</span>
+        <span class="eq-val mono dim">A · f(B(x − Cₓ), B(y − Cᵧ)) + D</span>
+      </div>
+      <div class="eq-line eq-live">
+        <span class="eq-key">z</span>
+        <span class="eq-eq">=</span>
+        <span id="eqLiveText" class="eq-val mono">sin(√(x² + y²))</span>
+      </div>
+      <div id="eqDescription" class="eq-description">Identity transformation — surface matches the base function.</div>
+    </div>
+
+    <!-- Top-right HUD -->
+    <div class="top-right-hud">
+      <div class="hud-pill" id="fpsPill" title="Frames per second">
+        <span class="hud-pill-key">FPS</span>
+        <span class="hud-pill-val" id="fpsValue">—</span>
+      </div>
+      <div class="hud-pill" id="resPill" title="Mesh resolution">
+        <span class="hud-pill-key">RES</span>
+        <span class="hud-pill-val" id="resValue">64²</span>
+      </div>
+      <div class="hud-pill" id="vertsPill" title="Vertex count">
+        <span class="hud-pill-key">VERTS</span>
+        <span class="hud-pill-val" id="vertsValue">—</span>
+      </div>
+    </div>
+
+    <!-- Bottom-center toolbar -->
+    <div class="bottom-toolbar" role="toolbar" aria-label="View controls">
+      <button class="tool-btn" id="viewIso"  data-shortcut="1" title="Isometric view (1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l8 4.5v9L12 21 4 16.5v-9z"/><path d="M12 3v18M4 7.5l16 9M4 16.5l16-9"/></svg>
+        <span>Iso</span>
+      </button>
+      <button class="tool-btn" id="viewTop"  data-shortcut="2" title="Top-down (2)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 12h16M12 4v16"/></svg>
+        <span>Top</span>
+      </button>
+      <button class="tool-btn" id="viewFront" data-shortcut="3" title="Front view (3)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="1.5"/><path d="M4 12h16"/></svg>
+        <span>Front</span>
+      </button>
+      <button class="tool-btn" id="viewSide" data-shortcut="4" title="Side view (4)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="16" height="12" rx="1.5"/><path d="M12 6v12"/></svg>
+        <span>Side</span>
+      </button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn tool-toggle" id="autoRotate" data-shortcut="space" title="Auto-rotate (Space)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        <span>Spin</span>
+      </button>
+      <button class="tool-btn tool-toggle" id="wireToggle" data-shortcut="w" title="Toggle wireframe (W)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 17l9 4 9-4M3 12l9 4 9-4"/></svg>
+        <span>Wire</span>
+      </button>
+      <button class="tool-btn tool-toggle" id="axesToggle" data-shortcut="g" title="Toggle grid & axes (G)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h18v18H3z"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+        <span>Grid</span>
+      </button>
+      <div class="tool-divider"></div>
+      <button class="tool-btn" id="randomize" title="Randomize transformation (X)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1"/><circle cx="16" cy="16" r="1"/><circle cx="16" cy="8" r="1"/><circle cx="8" cy="16" r="1"/><circle cx="12" cy="12" r="1"/></svg>
+        <span>Random</span>
+      </button>
+      <button class="tool-btn" id="resetAll" data-shortcut="r" title="Reset everything (R)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 1 9 9"/><path d="M3 4v5h5"/></svg>
+        <span>Reset</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ====== LEFT PANEL — FUNCTION LIBRARY ====== -->
+  <aside class="panel panel-left" id="leftPanel" aria-label="Function library">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="panel-eyebrow">01 — Surface</span>
+        <h2>Base Function</h2>
+      </div>
+      <button class="icon-btn panel-collapse" id="collapseLeft" aria-label="Collapse panel" title="Collapse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <div class="search-row">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg>
+        <input id="fnSearch" type="text" placeholder="Search functions…" aria-label="Search functions" />
+      </div>
+
+      <div class="category-tabs" id="categoryTabs" role="tablist">
+        <button class="cat-tab active" data-cat="all" role="tab" aria-selected="true">All</button>
+        <button class="cat-tab" data-cat="trig" role="tab">Trig</button>
+        <button class="cat-tab" data-cat="poly" role="tab">Polynomial</button>
+        <button class="cat-tab" data-cat="radial" role="tab">Radial</button>
+        <button class="cat-tab" data-cat="exotic" role="tab">Exotic</button>
+      </div>
+
+      <div class="fn-grid" id="fnGrid" role="listbox" aria-label="Function selector">
+        <!-- Populated by ui.js -->
+      </div>
+    </div>
+  </aside>
+
+  <!-- ====== RIGHT PANEL — TRANSFORMATIONS ====== -->
+  <aside class="panel panel-right" id="rightPanel" aria-label="Transformations">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="panel-eyebrow">02 — Transform</span>
+        <h2>Parameters</h2>
+      </div>
+      <button class="icon-btn panel-collapse" id="collapseRight" aria-label="Collapse panel" title="Collapse">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <!-- Vertical -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Amplitude</h3>
+          <span class="group-hint">vertical scale</span>
+        </header>
+        <div class="slider-card" data-key="A">
+          <div class="slider-meta">
+            <span class="slider-var">A</span>
+            <span class="slider-label">vertical stretch</span>
+            <span class="slider-value" id="valA">1.00</span>
+          </div>
+          <input class="range" type="range" id="rngA" min="-3" max="3" step="0.05" value="1" />
+          <div class="range-track-marks">
+            <span style="left:0%">−3</span>
+            <span style="left:25%">−1.5</span>
+            <span style="left:50%">0</span>
+            <span style="left:75%">1.5</span>
+            <span style="left:100%">3</span>
+          </div>
+        </div>
+
+        <div class="slider-card" data-key="D">
+          <div class="slider-meta">
+            <span class="slider-var">D</span>
+            <span class="slider-label">vertical shift</span>
+            <span class="slider-value" id="valD">0.00</span>
+          </div>
+          <input class="range" type="range" id="rngD" min="-5" max="5" step="0.1" value="0" />
+        </div>
+      </section>
+
+      <!-- Horizontal -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Domain</h3>
+          <span class="group-hint">horizontal scale & shift</span>
+        </header>
+
+        <div class="slider-card" data-key="B">
+          <div class="slider-meta">
+            <span class="slider-var">B</span>
+            <span class="slider-label">frequency / compress</span>
+            <span class="slider-value" id="valB">1.00</span>
+          </div>
+          <input class="range" type="range" id="rngB" min="0.2" max="3" step="0.05" value="1" />
+        </div>
+
+        <div class="slider-card" data-key="Cx">
+          <div class="slider-meta">
+            <span class="slider-var">Cₓ</span>
+            <span class="slider-label">x-shift</span>
+            <span class="slider-value" id="valCx">0.00</span>
+          </div>
+          <input class="range" type="range" id="rngCx" min="-5" max="5" step="0.1" value="0" />
+        </div>
+
+        <div class="slider-card" data-key="Cy">
+          <div class="slider-meta">
+            <span class="slider-var">Cᵧ</span>
+            <span class="slider-label">y-shift</span>
+            <span class="slider-value" id="valCy">0.00</span>
+          </div>
+          <input class="range" type="range" id="rngCy" min="-5" max="5" step="0.1" value="0" />
+        </div>
+      </section>
+
+      <!-- Rotation & twist -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Spatial</h3>
+          <span class="group-hint">rotate & twist</span>
+        </header>
+
+        <div class="slider-card" data-key="theta">
+          <div class="slider-meta">
+            <span class="slider-var">θ</span>
+            <span class="slider-label">rotate around z</span>
+            <span class="slider-value" id="valTheta">0°</span>
+          </div>
+          <input class="range" type="range" id="rngTheta" min="-180" max="180" step="1" value="0" />
+        </div>
+
+        <div class="slider-card" data-key="twist">
+          <div class="slider-meta">
+            <span class="slider-var">τ</span>
+            <span class="slider-label">twist by radius</span>
+            <span class="slider-value" id="valTwist">0.00</span>
+          </div>
+          <input class="range" type="range" id="rngTwist" min="-1" max="1" step="0.02" value="0" />
+        </div>
+      </section>
+
+      <!-- Reflections -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Reflections</h3>
+          <span class="group-hint">flip across an axis</span>
+        </header>
+        <div class="toggle-row">
+          <button class="chip-toggle" id="flipX" aria-pressed="false">
+            <span class="chip-icon">↔</span>
+            <span>X-axis</span>
+          </button>
+          <button class="chip-toggle" id="flipY" aria-pressed="false">
+            <span class="chip-icon">↕</span>
+            <span>Y-axis</span>
+          </button>
+          <button class="chip-toggle" id="flipZ" aria-pressed="false">
+            <span class="chip-icon">⤡</span>
+            <span>Z-axis</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Visual -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Appearance</h3>
+          <span class="group-hint">color & resolution</span>
+        </header>
+
+        <div class="row-label">Color mode</div>
+        <div class="seg-control" id="colorMode" role="radiogroup">
+          <button class="seg active" data-mode="gradient">Height</button>
+          <button class="seg" data-mode="slope">Slope</button>
+          <button class="seg" data-mode="plasma">Plasma</button>
+          <button class="seg" data-mode="viridis">Viridis</button>
+          <button class="seg" data-mode="mono">Mono</button>
+        </div>
+
+        <div class="row-label">Resolution</div>
+        <div class="seg-control" id="resMode" role="radiogroup">
+          <button class="seg active" data-res="64">64²</button>
+          <button class="seg" data-res="128">128²</button>
+          <button class="seg" data-res="192">192²</button>
+          <button class="seg" data-res="256">256²</button>
+        </div>
+
+        <div class="row-label">Domain size</div>
+        <div class="slider-card slim">
+          <div class="slider-meta">
+            <span class="slider-var">R</span>
+            <span class="slider-label">±range</span>
+            <span class="slider-value" id="valRange">5.0</span>
+          </div>
+          <input class="range" type="range" id="rngRange" min="2" max="12" step="0.5" value="5" />
+        </div>
+      </section>
+
+      <!-- Presets -->
+      <section class="control-group">
+        <header class="group-head">
+          <h3>Presets</h3>
+          <span class="group-hint">save & load states</span>
+        </header>
+        <div class="preset-grid" id="presetGrid"></div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- ====== TOP TOOLBAR ====== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <path d="M4 24 Q 12 4, 16 16 T 28 8" stroke="currentColor" stroke-width="2" fill="none"/>
+            <circle cx="16" cy="16" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Surface Studio</div>
+          <div class="brand-sub">Function Transformer 3D</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <div class="status-readout" id="statusReadout">Ready</div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="themeToggle" title="Toggle theme (T)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="icon-btn" id="fullscreenBtn" title="Fullscreen (F)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+      <button class="icon-btn" id="helpBtn" title="Help (?)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7V14"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ====== HELP MODAL ====== -->
+  <div class="modal-shroud" id="helpModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Keyboard & Mouse</h2>
+        <button class="icon-btn" id="closeHelp" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="kbd-grid">
+          <div class="kbd-section">
+            <h3>View</h3>
+            <dl>
+              <dt><kbd>1</kbd></dt><dd>Isometric</dd>
+              <dt><kbd>2</kbd></dt><dd>Top-down</dd>
+              <dt><kbd>3</kbd></dt><dd>Front</dd>
+              <dt><kbd>4</kbd></dt><dd>Side</dd>
+              <dt><kbd>Space</kbd></dt><dd>Auto-rotate</dd>
+              <dt><kbd>F</kbd></dt><dd>Fullscreen</dd>
+            </dl>
+          </div>
+          <div class="kbd-section">
+            <h3>Display</h3>
+            <dl>
+              <dt><kbd>W</kbd></dt><dd>Wireframe</dd>
+              <dt><kbd>G</kbd></dt><dd>Grid & axes</dd>
+              <dt><kbd>T</kbd></dt><dd>Light/dark</dd>
+              <dt><kbd>C</kbd></dt><dd>Cycle color mode</dd>
+            </dl>
+          </div>
+          <div class="kbd-section">
+            <h3>Action</h3>
+            <dl>
+              <dt><kbd>R</kbd></dt><dd>Reset all</dd>
+              <dt><kbd>X</kbd></dt><dd>Randomize</dd>
+              <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>Prev/next function</dd>
+              <dt><kbd>?</kbd></dt><dd>This help</dd>
+            </dl>
+          </div>
+          <div class="kbd-section">
+            <h3>Mouse</h3>
+            <dl>
+              <dt>Drag</dt><dd>Orbit camera</dd>
+              <dt>Right-drag</dt><dd>Pan</dd>
+              <dt>Wheel</dt><dd>Zoom</dd>
+              <dt>Double-click</dt><dd>Reset view</dd>
+            </dl>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <p class="foot-note">All transforms apply as <code>z = A · f(B(x − Cₓ), B(y − Cᵧ)) + D</code> after axis rotation θ and radial twist τ.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCRIPTS ====== -->
+  <!-- Three.js UMD build (works on file:// — no module loader needed) -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+
+  <!-- Application modules — load order matters -->
+  <script src="js/core.js"></script>
+  <script src="js/functions.js"></script>
+  <script src="js/presets.js"></script>
+  <script src="js/shaders.js"></script>
+  <script src="js/materials.js"></script>
+  <script src="js/geometry.js"></script>
+  <script src="js/axes.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/transformations.js"></script>
+  <script src="js/equation.js"></script>
+  <script src="js/animation.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

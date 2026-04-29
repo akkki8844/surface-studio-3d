@@ -1,0 +1,33 @@
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Local dev server output (if you ever add one)
+dist/
+build/
+.cache/
+
+# Environment files
+.env
+.env.local
+
+# Node (if ever added)
+node_modules/
+package-lock.json
+yarn.lock
