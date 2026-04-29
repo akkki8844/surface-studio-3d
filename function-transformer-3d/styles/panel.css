@@ -1,0 +1,345 @@
+/* ============================================================
+   PANELS — left (function library) and right (transforms)
+   ============================================================ */
+
+.panel {
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-right: 1px solid var(--border-1);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-panel);
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  transition: opacity var(--d-base) var(--ease-out);
+}
+
+.panel-left { grid-area: left; }
+.panel-right {
+  grid-area: right;
+  border-right: none;
+  border-left: 1px solid var(--border-1);
+}
+
+body.left-collapsed .panel-left,
+body.right-collapsed .panel-right {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: var(--sp-5) var(--sp-5) var(--sp-3);
+  border-bottom: 1px solid var(--border-1);
+  flex-shrink: 0;
+}
+
+.panel-eyebrow {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 4px;
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+  line-height: 1.1;
+}
+
+.panel-collapse {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 2px;
+}
+.panel-collapse svg { width: 14px; height: 14px; }
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbars */
+.panel-body::-webkit-scrollbar {
+  width: 8px;
+}
+.panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.panel-body::-webkit-scrollbar-thumb {
+  background: var(--border-2);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.panel-body::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
+/* ============================================================
+   SEARCH ROW (left panel)
+   ============================================================ */
+
+.search-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-row .search-icon {
+  position: absolute;
+  left: 12px;
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.search-row input {
+  width: 100%;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  padding: 9px 12px 9px 34px;
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  outline: none;
+  transition: border-color var(--d-fast), background var(--d-fast);
+}
+.search-row input::placeholder { color: var(--text-4); }
+.search-row input:hover { background: var(--bg-soft-2); }
+.search-row input:focus {
+  border-color: var(--accent);
+  background: var(--bg-soft-2);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* ============================================================
+   CATEGORY TABS
+   ============================================================ */
+
+.category-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.category-tabs::-webkit-scrollbar { display: none; }
+
+.cat-tab {
+  flex: 1;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--d-fast), color var(--d-fast);
+}
+.cat-tab:hover { color: var(--text-1); }
+.cat-tab.active {
+  background: var(--bg-elev-2);
+  color: var(--text-1);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   FUNCTION GRID (cards)
+   ============================================================ */
+
+.fn-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2);
+}
+
+.fn-card {
+  position: relative;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-3);
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease-out);
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  overflow: hidden;
+  min-height: 78px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.fn-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--accent-soft), transparent 60%);
+  opacity: 0;
+  transition: opacity var(--d-base) var(--ease-out);
+  pointer-events: none;
+}
+
+.fn-card:hover {
+  border-color: var(--border-3);
+  background: var(--bg-soft-2);
+  transform: translateY(-1px);
+}
+
+.fn-card.active {
+  border-color: var(--accent);
+  background: var(--bg-soft-2);
+  box-shadow: 0 0 0 1px var(--accent), 0 4px 14px var(--accent-glow);
+}
+.fn-card.active::before { opacity: 1; }
+
+.fn-card-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+  position: relative;
+}
+
+.fn-card.active .fn-card-label {
+  color: var(--accent);
+}
+
+.fn-card-desc {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 4px;
+  line-height: 1.3;
+  position: relative;
+}
+
+.fn-card-spark {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 28px;
+  height: 18px;
+  opacity: 0.6;
+}
+.fn-card-spark path {
+  stroke: var(--text-3);
+  stroke-width: 1.4;
+  fill: none;
+}
+.fn-card.active .fn-card-spark path {
+  stroke: var(--accent);
+  opacity: 1;
+}
+
+/* ============================================================
+   CONTROL GROUPS (right panel)
+   ============================================================ */
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border-1);
+}
+.group-head h3 {
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.group-hint {
+  font-size: 10px;
+  color: var(--text-4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.row-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 4px 0 -2px;
+}
+
+/* ============================================================
+   PRESETS GRID
+   ============================================================ */
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2);
+}
+
+.preset-card {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  cursor: pointer;
+  transition: all var(--d-fast) var(--ease-out);
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  font-size: var(--fs-sm);
+}
+.preset-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-soft-2);
+  color: var(--text-1);
+}
+.preset-card .pn {
+  display: block;
+  font-weight: 600;
+  font-size: var(--fs-md);
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+.preset-card .pd {
+  display: block;
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.3;
+}
+
+/* ============================================================
+   COLLAPSED PANEL — chevron flip
+   ============================================================ */
+body.left-collapsed #collapseLeft svg { transform: scaleX(-1); }
+body.right-collapsed #collapseRight svg { transform: scaleX(-1); }

@@ -1,0 +1,165 @@
+/* ============================================================
+   EQUATION HUD (top-left of stage)
+   ============================================================ */
+
+.equation-hud {
+  position: absolute;
+  top: var(--sp-5);
+  left: var(--sp-5);
+  max-width: 460px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  z-index: var(--z-hud);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.eq-line {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.eq-key {
+  color: var(--text-3);
+  font-style: italic;
+  font-size: var(--fs-sm);
+  flex-shrink: 0;
+  min-width: 48px;
+}
+.eq-eq {
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.eq-val {
+  color: var(--text-1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eq-divider {
+  height: 1px;
+  background: var(--border-1);
+  margin: 4px 0;
+}
+
+.eq-template .eq-val {
+  color: var(--text-3);
+  font-size: var(--fs-sm);
+}
+
+.eq-live .eq-val {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: var(--fs-base);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+.eq-live .eq-val .num {
+  color: var(--text-1);
+  font-weight: 700;
+}
+.eq-live .eq-val .op {
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.eq-description {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--border-1);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  white-space: normal;
+}
+
+/* ============================================================
+   TOP RIGHT HUD — performance pills
+   ============================================================ */
+
+.top-right-hud {
+  position: absolute;
+  top: var(--sp-5);
+  right: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  z-index: var(--z-hud);
+  align-items: flex-end;
+}
+
+.hud-pill {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-pill);
+  padding: 4px 10px 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  box-shadow: var(--shadow-sm);
+  min-width: 84px;
+  justify-content: space-between;
+}
+
+.hud-pill-key {
+  color: var(--text-3);
+  text-transform: uppercase;
+  font-size: 9px;
+}
+
+.hud-pill-val {
+  color: var(--text-1);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+#fpsValue.warn { color: var(--amber); }
+#fpsValue.bad  { color: var(--crimson); }
+#fpsValue.good { color: var(--accent); }
+
+/* ============================================================
+   AXIS GIZMO (bottom-left)
+   ============================================================ */
+
+.axis-gizmo {
+  position: absolute;
+  bottom: var(--sp-5);
+  left: var(--sp-5);
+  width: 96px;
+  height: 96px;
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  z-index: var(--z-hud);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.axis-gizmo canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 720px) {
+  .axis-gizmo { width: 72px; height: 72px; }
+  .equation-hud { max-width: calc(100vw - 40px); font-size: 11px; }
+}

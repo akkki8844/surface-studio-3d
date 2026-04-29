@@ -1,0 +1,169 @@
+/* ============================================================
+   THEME TOKENS — color, motion, spacing, radius, shadow
+   Two themes: dark (default) and light, switched via [data-theme]
+   ============================================================ */
+
+:root {
+  /* Spacing scale (4pt base) */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 56px;
+  --sp-10: 72px;
+
+  /* Radius */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-2xl: 28px;
+  --r-pill: 999px;
+
+  /* Type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --font-display: "Inter Display", "Inter", system-ui, sans-serif;
+
+  /* Type scale */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 18px;
+  --fs-2xl: 22px;
+  --fs-3xl: 28px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in:  cubic-bezier(0.6, 0.04, 0.98, 0.34);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --d-fast: 120ms;
+  --d-base: 180ms;
+  --d-slow: 320ms;
+
+  /* Z-layers */
+  --z-stage: 0;
+  --z-hud: 10;
+  --z-panel: 20;
+  --z-toolbar: 30;
+  --z-topbar: 40;
+  --z-modal: 100;
+}
+
+/* ============================================================
+   DARK THEME (default)
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg-base: #07090c;
+  --bg-deep: #04060a;
+  --bg-elev-1: rgba(20, 26, 34, 0.72);
+  --bg-elev-2: rgba(28, 36, 48, 0.85);
+  --bg-glass: rgba(14, 19, 26, 0.55);
+  --bg-soft: rgba(255, 255, 255, 0.04);
+  --bg-soft-2: rgba(255, 255, 255, 0.07);
+
+  /* Borders */
+  --border-1: rgba(255, 255, 255, 0.06);
+  --border-2: rgba(255, 255, 255, 0.10);
+  --border-3: rgba(255, 255, 255, 0.16);
+  --border-strong: rgba(255, 255, 255, 0.24);
+
+  /* Text */
+  --text-1: #ecf2f8;
+  --text-2: #b6c1cd;
+  --text-3: #7a8593;
+  --text-4: #4f5862;
+
+  /* Accent (teal) */
+  --accent: #2dd4bf;
+  --accent-2: #14b8a6;
+  --accent-soft: rgba(45, 212, 191, 0.14);
+  --accent-glow: rgba(45, 212, 191, 0.45);
+
+  /* Auxiliary palette */
+  --indigo:  #818cf8;
+  --magenta: #f472b6;
+  --amber:   #fbbf24;
+  --crimson: #f87171;
+  --lime:    #a3e635;
+
+  /* Sky / scene gradient (used by canvas fallback bg) */
+  --sky-top:    #0e1721;
+  --sky-bottom: #04070b;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.35);
+  --shadow-md:  0 6px 18px rgba(0,0,0,0.45);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.55);
+  --shadow-glow: 0 0 30px var(--accent-glow);
+
+  /* Glass blur */
+  --blur-sm: blur(8px) saturate(140%);
+  --blur-md: blur(18px) saturate(160%);
+  --blur-lg: blur(28px) saturate(180%);
+}
+
+/* ============================================================
+   LIGHT THEME
+   ============================================================ */
+
+[data-theme="light"] {
+  --bg-base: #f4f7fb;
+  --bg-deep: #e6ecf3;
+  --bg-elev-1: rgba(255, 255, 255, 0.78);
+  --bg-elev-2: rgba(255, 255, 255, 0.92);
+  --bg-glass: rgba(255, 255, 255, 0.65);
+  --bg-soft: rgba(15, 23, 42, 0.04);
+  --bg-soft-2: rgba(15, 23, 42, 0.07);
+
+  --border-1: rgba(15, 23, 42, 0.07);
+  --border-2: rgba(15, 23, 42, 0.12);
+  --border-3: rgba(15, 23, 42, 0.18);
+  --border-strong: rgba(15, 23, 42, 0.30);
+
+  --text-1: #0b1220;
+  --text-2: #3a4756;
+  --text-3: #67737f;
+  --text-4: #97a2ad;
+
+  --accent: #0d9488;
+  --accent-2: #0f766e;
+  --accent-soft: rgba(13, 148, 136, 0.12);
+  --accent-glow: rgba(13, 148, 136, 0.30);
+
+  --indigo:  #4f46e5;
+  --magenta: #db2777;
+  --amber:   #d97706;
+  --crimson: #dc2626;
+  --lime:    #65a30d;
+
+  --sky-top:    #dbeafe;
+  --sky-bottom: #f1f5f9;
+
+  --shadow-sm:  0 1px 2px rgba(15,23,42,0.10);
+  --shadow-md:  0 8px 24px rgba(15,23,42,0.12);
+  --shadow-lg:  0 24px 60px rgba(15,23,42,0.18);
+  --shadow-glow: 0 0 24px var(--accent-glow);
+
+  --blur-sm: blur(8px) saturate(120%);
+  --blur-md: blur(16px) saturate(140%);
+  --blur-lg: blur(24px) saturate(160%);
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
